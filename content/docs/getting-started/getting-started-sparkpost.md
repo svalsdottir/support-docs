@@ -115,7 +115,7 @@ Here are migration guides for other popular Email Services:
 
 ## Sending Email
 
-If you'd like to dive right in, you can read the [API reference documentation](https://developers.sparkpost.com/api/) and we have a [collection](https://www.postman.com/run-collection/81ee1dd2790d7952b76a) for [Postman](https://www.postman.com/) to help you experiment with manual API calls.
+If you'd like to dive right in, you can read the [API reference documentation](https://developers.sparkpost.com/api/) and we have a [collection](https://god.postman.co/run-collection/ee44dcd644445e8bd864?action=collection%2Fimport) for [Postman](https://www.postman.com/) to help you experiment with manual API calls.
 
 In case you need it, SparkPost also supports [SMTP-based email delivery](#header-SMTP) with a few modern twists.
 
@@ -221,7 +221,7 @@ Beyond the basics, SparkPost also has a slew of additional capabilities which ma
 
 ### Email Templates And Personalization
 
-If you're sending similar content to lots of people, Templates let you write the message once using substitution variables and logic for personalization. You can create and edit templates on your account in the [Templates](https://app.sparkpost.com/templates) ([EU](https://app.eu.sparkpost.com/templates)) page. Check the SparkPost [template language](https://developers.sparkpost.com/api/template-language/) for information on how to personalize your emails.
+If you are sending similar content to lots of people, Templates let you write the message once using substitution variables and logic for personalization. You can create and edit templates on your account in the [Templates](https://app.sparkpost.com/templates) ([EU](https://app.eu.sparkpost.com/templates)) page. Check the SparkPost [template language](https://developers.sparkpost.com/api/template-language/) for information on how to personalize your emails.
 
 ### Service Providers - Subaccounts
 

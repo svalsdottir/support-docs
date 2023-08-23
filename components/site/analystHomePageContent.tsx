@@ -22,7 +22,7 @@ const gettingStarted = {
     },
     {
       url: '/analyst/competitive-tracker/',
-      title: 'Competitve Tracker',
+      title: 'Competitive Tracker',
       desc: 'Guides for optimizing your use of Competitive Tracker',
       linkText: 'Learn More',
     },
@@ -59,7 +59,7 @@ const help = {
     </>
   ),
   content: [
-    { text: 'Submit a ticket', url: 'mailto:support@emailanalyst.com', Icon: Feedback },
+    { text: 'Submit a ticket', url: 'mailto:support@edatasource.com', Icon: Feedback },
   ],
 };
 

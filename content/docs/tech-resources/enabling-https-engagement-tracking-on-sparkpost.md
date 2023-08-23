@@ -1,5 +1,5 @@
 ---
-lastUpdated: "12/22/2021"
+lastUpdated: "07/10/2023"
 title: "Enabling HTTPS Engagement Tracking on SparkPost"
 description: "SparkPost supports HTTPS engagement tracking for customers via self-service for all SparkPost customers. To enable SSL engagement tracking for a domain, additional configuration for SSL keys is required."
 ---
@@ -67,23 +67,21 @@ After configuring your CDN, you need instruct SparkPost to encode your links usi
 ---
 ## Step by Step Guide with CloudFlare
 
-_Updated December 2021. Uses a simpler forwarding method without the need for custom page rules. Images and descriptions follow the current CloudFlare web UI._
+_Updated for Cloudflare web UI as of June 2023._
 
 > CloudFlare requires you to use their nameservers, i.e. to give them control over routing for the entire organizational domain. That means it works differently to the other CDNs listed here.
 
 1. Create (or log in to your existing) CloudFlare account.
 
-1. Go to the "websites" option in the navigation menu on the CloudFlare UI.
+1. In CloudFlare, select the **Websites** management menu on the left. If your organizational domain is already shown on the app, click on it. Otherwise choose **Add a Site**. Enter your domain and confirm.
 
-   ![](media/enabling-https-engagement-tracking-on-sparkpost/cloudflare_UI.png)
-
-   If your organizational domain is already shown here, you can skip this step. Otherwise choose "Add a Site".
+   ![](media/enabling-https-engagement-tracking-on-sparkpost/cloudflare-2023-add-site.png)
 
    CloudFlare will scan your existing DNS provider to collect records, and prompt you to change to use specifically-named CloudFlare nameservers (yours may be different to the example shown below). You will require a login to your existing DNS provider to be able to change them; beyond the scope of this document.
 
-   Wait for the changes to take effect. You can monitor this in the CloudFlare UI.
+   Wait for the changes to take effect. You can monitor this in the CloudFlare dashboard.
 
-     ![](media/enabling-https-engagement-tracking-on-sparkpost/cloudflare_ns_change.png)
+     ![](media/enabling-https-engagement-tracking-on-sparkpost/cloudflare-2023-add-nameservers.png)
 
    Note that (as the above screen mentions) the old nameservers may still be cached in the Internet and will take time to update. You can check the nameservers that a machine sees using `dig NS`:
 
@@ -102,8 +100,8 @@ _Updated December 2021. Uses a simpler forwarding method without the need for cu
     ;myexample.com.		IN	NS
 
     ;; ANSWER SECTION:
-    myexample.com.	300	IN	NS	athena.ns.cloudflare.com.
-    myexample.com.	300	IN	NS	sam.ns.cloudflare.com.
+    myexample.com.	300	IN	NS	clay.ns.cloudflare.com.
+    myexample.com.	300	IN	NS	coco.ns.cloudflare.com.
 
     ;; Query time: 8 msec
     ;; SERVER: 172.31.0.2#53(172.31.0.2)
@@ -113,31 +111,41 @@ _Updated December 2021. Uses a simpler forwarding method without the need for cu
 
 1. Check, and if necessary add the tracking domain CNAME.
 
-   In CloudFlare, go to the "DNS" management menu. If you already have a plain (HTTP) tracking domain set up with SparkPost, it should be already present in the records. Check that it's set to "Proxied".
+   In CloudFlare, go to the **DNS** management menu. If you already have a plain (HTTP) tracking domain set up with SparkPost, it should be already present in the records. Check that it's set to "Proxied".
 
    If you are setting up a new tracking domain, then select the "Add record" option:
 
-   * Select record type "CNAME".
-   * Enter the subdomain you have chosen (in our example, this is `track`). Enter just the subdomain part.
-   * Specify the target as the correct SparkPost tracking endpoint address for your service, see [here](#sparkpost-tracking-endpoints).
-   * Ensure Proxy status is enabled.
+   * Select **CNAME** as record type.
+   * Enter the subdomain you have chosen (in our example, this is _`track`_) in the **Name** field.
+   * Specify the **Target** as the correct SparkPost tracking endpoint address for your service. See the possible endpoint addresses [here](#sparkpost-tracking-endpoints).
+   * Ensure *Proxy status* is **enabled**.
 
-      ![](media/enabling-https-engagement-tracking-on-sparkpost/cloudflare_create_cname.png)
-   * Select "Save".
+      ![](media/enabling-https-engagement-tracking-on-sparkpost/cloudflare-2023-add-cname.png)
+   * Select **Save**.
 
 1. Check that CloudFlare is set to use HTTPS.
 
-   In CloudFlare, go to the "SSL/TLS" management menu. You should see an Overview  screen showing the encryption mode as "Full".
+   In CloudFlare, go to the **SSL/TLS** management menu. You should see an Overview screen showing the encryption mode as **Full**.
 
-   ![](media/enabling-https-engagement-tracking-on-sparkpost/cloudflare_SSL_full.png)
+   ![](media/enabling-https-engagement-tracking-on-sparkpost/cloudflare-2023-ssl-full.png)
 
-
-   More information on CloudFlare SSL options can be found in [this article](https://support.cloudflare.com/hc/en-us/articles/200170416).
+   More information on CloudFlare SSL options can be found in [this article](https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes#available-encryption-modes).
 
    After a few minutes, you can verify that the routing is correct using `ping` to your tracking domain. See also [troubleshooting tips](#troubleshooting-tips).
 
-   Cloudflare does not offer control of cache "time to live" (TTL) on free accounts. This may mask repeat opens/clicks, as described [here](#cache-time-to-live-ttl-settings). If you have a paid account, under Caching, check and set your TTL value.
+   Cloudflare does not offer control of cache "time to live" (TTL) on free accounts. This may mask repeat opens/clicks, as described [here](#cache-time-to-live-ttl-settings). If you have a paid account, under **Caching** on the left side menu, check and set your TTL value.
 
+1. Confirm that `User-Agent` and `Host` HTTP headers from original requests are correctly forwarded to SparkPost. In CloudFlare, go to the **Rules** management menu.
+
+   ![](media/enabling-https-engagement-tracking-on-sparkpost/cloudflare-2023-rules.png)
+
+    In **Page Rules**, be sure that there are no configured page rules with the *Host Header Override* setting.
+
+    In **Transform Rules**, be sure that there are no configured transform rules that modify the `User-Agent` and `Host` headers.
+
+    In **Origin Rules**, be sure that there are no origin rules configured to rewrite the `Host` header.
+
+    If your CloudFlare account has Load Balancing enabled, go to **Traffic** management menu on the left and select **Load Balancing**. Be sure that the option to override the `Host` header is disabled in your load balancer.
 
 1. Follow [these steps](#switch-tracking-domain-to-secure-and-validate) to update and verify your tracking domain.
 
@@ -237,11 +245,15 @@ For up to date information on creating a distribution via CloudFront, please ref
 
     * Enable forwarding of the `User-Agent` header. Type in `User-Agent` and click "Add". This allows `User-Agent` data to be present in your engagement events received from SparkPost.
 
+      ![](media/enabling-https-engagement-tracking-on-sparkpost/cloudfront_cache5.png)
+    
+    * Enable forwarding of the `Host` header. Type in `Host` and click "Add". This allows `Host` data to be present in your engagement events received from SparkPost.
+
       ![](media/enabling-https-engagement-tracking-on-sparkpost/cloudfront_cache6.png)
 
     * Leave Query string and Cookies set to defaults (None). Your origin request settings should now look like this.
 
-      ![](media/enabling-https-engagement-tracking-on-sparkpost/cloudfront_cache5.png)
+      ![](media/enabling-https-engagement-tracking-on-sparkpost/cloudfront_cache7.png)
 
     * Click "Create" (on first time) / "Save Changes" (if modifying).
 
@@ -335,74 +347,77 @@ Once your CNAME is set up with your DNS provider, instead of providing an existi
 
 ---
 ## Step by Step Guide with Fastly
+_Updated June 2023. Images and descriptions follow the current Fastly web UI._
 
-Sign up for Fastly or log in to an existing account.
+Sign up for [Fastly](https://www.fastly.com/) or log in to an existing account.
 
-1. Select the **Configure** tab on the Dashboard, then "Create Service". Give your service a name, and add your tracking domain under "Domains".
+1. Select the **Deliver** tab on the Dashboard, then click the **Create a delivery service** button. Give your service a name in the _Options_ menu by clicking **Edit service name**.
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-create-service.png)
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-2023-create-a-delivery-service.png)
 
+1. In the **Domains** section, insert your tracking domain into the provided field and click **Add**. A subdomain (like *click*.domain.com, rather than just domain.com) is recommended.
 
-1. Select "Origins" on the left. Add the correct endpoint address for your service, see [here](#sparkpost-tracking-endpoints).
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-2023-add-domain.png)
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-origin-hosts.png)
+1. Select **Origins** in the left-side menu. In the **Hosts** section, add the correct tracking endpoint for your service (also known as hostname), see possible values [here](#sparkpost-tracking-endpoints).
+     
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-2023-add-host.png)
 
-    Fastly detects that SparkPost supports TLS, and shows the host entry like this. Optionally you can use the "pencil" edit icon to set a meaningful name.
+    Fastly detects that SparkPost supports TLS, and shows the host entry like below. Optionally you can use the "pencil" edit icon to set a meaningful name.
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-origin.png)
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-2023-host-added.png)
 
-    Fastly default settings pass the `user_agent` and `ip_address` through to SparkPost engagement tracking as expected.
+    Fastly default settings pass the `User-Agent` and `X-Forwarded-For` HTTP headers through to SparkPost engagement tracking as expected.
 
-1. On "Settings", "Cache Settings", set the "Fallback TTL" to ten seconds (explanation [here](#cache-time-to-live-ttl-settings)).
+1. Click **Settings** in the left-side menu, and scroll down to the **Fallback TTL** section. Click on the "pencil" icon to set the Fallback TTL to **10** seconds.
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-ttl.png)
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-2023-fallback-ttl.png)
+
+1. Still in the **Settings** page, be sure the **Override host** option is **disabled**. For each CDN request, the `Host` HTTP header should be forwarded to SparkPost in order for your domain to be identified by engagement tracking. If this option is enabled, requests to SparkPost won't contain your host value.
+
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-2023-override-host.png)
+
+1. Activate your service by clicking on the **Activate** button in the top right corner of the page.
 
 ## Issue a certificate with Fastly
 
-1. Select the "HTTPS and network" tab, then "Get Started".
+1. Under the *Secure* tab, select *TLS management*. If you have no TLS domains, click **Get started**. Otherwise, click the **Secure another domain** in the upper-right corner of the page.
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-cert1.png)
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-2023-tls-get-started.png)
 
+1. Enter your tracking domain and click **Add**. Let's Encrypt certificates are free, and can be auto-renewed by Fastly via an additional CNAME record that you will need to create with your DNS provider. You can upload your own private key & certificate instead of using Let's Encrypt.
 
-1. Enter your tracking domain. Let's Encrypt certificates are free, and can be auto-renewed by Fastly, via an additional CNAME record that you will need to create with your DNS provider.
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-2023-submit-tls-domain.png)
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-cert2.png)
+    Once finished, click **Submit**.
 
-    Other options are to use GlobalSign, or to upload your own private key & certificate.
+1. For Let's Encrypt option: verify your domain ownership creating a CNAME record with your DNS provider using the values provided by Fastly.
 
-1. For Let's Encrypt option: copy the information shown and create a CNAME record in your DNS provider's account.
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-2023-tls-pending.png)
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-cert-letsencrypt-cname.png)
+1. After you create the CNAME, Fastly will request the certificate to Let's Encrypt.
 
-1. After you create the CNAME, Fastly requests the certificate.
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-2023-tls-issuing.png)
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-cert-letsencrypt2.png)
+    After a short time, the certificate should be issued as below:
 
-    After a short time, you should see
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-2023-tls-issued.png)
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-cert-letsencrypt3.png)
+1. Select *More Details...* and look for **CNAME records**. This is the address the Fastly will use to serve your incoming requests.
 
-1. Select "More Details .." and look for "CNAME records". This is the address the Fastly will use to serve your incoming requests.
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-2023-cname-records.png)
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-service-cname.png)
-
-1. Create the CNAME record within your DNS service (this will be specific to your provider). If you have a TTL (time to live) field, we suggest to set this to 1 hour.
-
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-cname.png)
-
-    _Example DNS provider CNAME setup_
-
-    You can verify that the routing is successful using `ping` on your created record.
+1. Create the CNAME record for the tracking domain within your DNS service (this will be specific to your provider) pointing to the CNAME address provided by Fastly (as seen above). If you have a TTL (time to live) field, we suggest to set this to 1 hour. You can verify that the routing is successful using `ping` on your created record.
 
 1. Follow [these steps](#switch-tracking-domain-to-secure-and-validate) to update and verify your tracking domain.
 
 Fastly keeps previous versions of your configuration, and can show the "diff" between them. You can also set up advanced routing rules using the VCL language, and monitor statistics on served requests.
 
-![](media/enabling-https-engagement-tracking-on-sparkpost/fastly-stats.png)
-
 ---
 
 ## Step by Step Guide with Google Cloud Platform
+
+_Updated for Google Cloud Platform as of July 2023._
 
 Unlike some other services, [Google Cloud Platform](https://cloud.google.com/) (GCP) can route tracking domains to SparkPost via an ["external" HTTPS load-balancer](https://cloud.google.com/load-balancing/docs/https), with certificate and routing rules. This is conceptually simpler than using a CDN in front of SparkPost tracking, as there is no caching [Time to Live](#cache-time-to-live-ttl-settings) to consider.
 
@@ -410,142 +425,142 @@ GCP organizes resources under named projects.
 
 1. From the top menu, select an existing project, or create a new project.
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-new-project.png)
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-new-project.png)
 
-1. On the main menu (top left), scroll down and select "Network Services" then "Load balancing".
+1. On the main menu (top left), scroll down and select **Network Services** then **Load balancing**.
+
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-network-services.png)
 
     It will take a few minutes for a new project to become ready for adding services.
 
     >You may see a message such as "_Compute Engine is getting ready_". Refresh your browser to continue.
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-network-services.png)
+1. Click the **Create load balancer** button at the top.
 
- 1. Choose "Create load balancer".
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-create-load-balancer.png)
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-load-balancing.png)
+    You will see three options as below. Choose **Aplication Load Balancer (HTTP/S)** and Start configuration.
 
-1. You will see three options.
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-https-lb.png)
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-https-lb.png)
+1. On the question *Internet facing or internal only*, choose **From Internet to my VMs or serverless services**.
 
-    Choose "HTTP(S) Load Balancing" and Start configuration.
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-lb-internet-facing.png)
 
-1. On the question "Internet facing or internal only", choose "From Internet to my VMs" and continue.
-
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-lb1.png)
+    Regarding *Global or Regional*, choose the best option for your application. In this guide, we will proceed with a **Global external Application Load Balancer**. Select **Continue**.
 
 1. Give your load balancer a meaningful name.
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-name.png)
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-lb-name.png)
 
     Note the remaining setup steps:
 
-    * Backend (which will be SparkPost's engagement tracking endpoint)
-    * Host and Path Rules, and
-    * Frontend configuration (which includes the certificate).
+    * Frontend configuration (which includes the certificate);
+    * Backend configuration (which will be SparkPost's engagement tracking endpoint) and
+    * Routing rules.
 
     We now configure each of these, then create the load-balancer.
-
-1. Backend configuration:
-
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-backend1.png)
-
-    Choose Backend services / Create a backend service.
-
-    * Give the backend service a name, e.g. "sparkpost-engagement-tracking".
-    * For "Backend type", choose "Internet network endpoint group".
-    * For Protocol, choose "HTTPS". Leave "Named port" and "Timeout" at defaults.
-
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-new-backend-group.png)
-
-    * In the "New backend" dialog, choose "Create Internet network endpoint group". This will open a new browser tab.
-
-1.  Give your "Network Endpoint Group" a name:
-
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-create-network-endpoint-group.png)
-
-    * Set Default port to 443.
-    * On "Add through", leave this set at "Fully qualified domain name and port".
-    * On "Fully qualified domain name", add the correct endpoint address for your service, see [here](#sparkpost-tracking-endpoints).
-    * Select "Create".
-
-    You should now see your "Network Endpoint Group" exists.
-
-     ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-network-endpoint-group-exists.png)
-
-    Close this tab, and **return to your previous tab**. Unfortunately this does not auto-refresh; however, start typing the name of the Network Endpoint Group you just created, and it will appear.
-
-
-      ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-choose-backend-group.png)
-
-    Choose "Done".
-
-    * Leave "Enable Cloud CDN" unchecked and the other settings at defaults.
-
-    * Scroll to the end of the page and select "Create".
-
-      ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-backend-create.png)
-
-    * This returns you to the "New HTTP(S) load balancer" view, showing with blue check marks that "Backend configuration" and "Host and path rules" are done.
-
-      ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-https-lb-step2.png)
-
-      For "Host and path rules": the above default configuration (shown in gray) passes all traffic on the load balancer through to our back end; this is sufficient.
 
 1. Frontend configuration
 
     * Enter a name.
-    * For Protocol, select "HTTPS (includes HTTP/2)".
 
-        ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-front-end-config.png)
+        For Protocol, select **HTTPS (includes HTTP/2)**.
 
-    * If you have an existing certificate for your tracking domain, you can upload it via this dialog. Otherwise choose "Create a new certificate". This has the advantage that GCP will handle your renewals.
+        ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-lb-frontend.png)
 
-      ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-front-end-cert.png)
+    * Select the **Certificate** field and click on **Create new certificate**. Choose a name to identify your certificate. If you have an existing certificate for your tracking domain, you can upload it via this dialog. 
+    
+        ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-lb-frontend-cert.png)
+    
+        Otherwise choose the **Create Google-managed certificate** option. This has the advantage that GCP will handle your renewals. Under *Domains*, enter your tracking domain and select **Create**.
 
-    * For a new certificate, [additional steps](#issue-a-certificate-with-google-cloud) are necessary after you review and finalize. The certificate will be available only after you point your domain to the frontend service.
+        ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-lb-create-cert.png)
+
+    * For a new Google-managed certificate, [additional steps](#issue-a-certificate-with-google-cloud) are necessary after you review and finalize. The certificate will be available only after you point your domain to the frontend service.
+
+1. Backend configuration
+
+
+    * Choose **Backend services & backend buckets** / **Create a backend service**.
+    
+        ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-lb-backend.png)
+    
+        Give the backend service a name, e.g. "sparkpost-engagement-tracking".
+
+        For *Backend type*, choose **Internet network endpoint group**.
+
+        For *Protocol*, choose **HTTPS**. Leave *Named port* and *Timeout* at defaults.
+
+    * In the *New backend* dialog, choose **Create Internet network endpoint group**. This will open a new browser tab.
+
+        ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-create-backend-service.png)
+
+    * Give your *Network Endpoint Group* a name:
+
+        ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-new-endpoint-group.png)
+
+        Set Default port to 443.
+
+        On *Add through*, leave this set at **Fully qualified domain name and port**.
+
+        On *Fully qualified domain name*, add the correct endpoint address for your service, see [here](#sparkpost-tracking-endpoints).
+
+    * Select **Create**. You should now see your "Network Endpoint Group" exists.
+
+        ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-network-endpoint-group-exists.png)
+
+    * Close this tab, and **return to your previous tab**.
+    
+        Unfortunately this does not auto-refresh; however, start typing the name of the Network Endpoint Group you just created, and it will appear. Click on **Done**.
+
+        ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-choose-backend-group.png)
+
+    * Leave *Enable Cloud CDN* unchecked and the other settings at defaults.
+
+    * Scroll to the end of the page and select **Create**. This returns you to the *Create a new global external load balancer* view, showing with blue check marks that *Frontend configuration*, *Backend configuration* and *Routing rules* are done.
+
+        ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-routing-rules.png)
+
+    * For *Routing rules* mode, leave **Simple host and path rule** option selected. This default configuration passes all traffic on the load balancer through to our back end; this is sufficient.
+
+    * Be sure that no Load Balancer configurations are set up to change the `Host` HTTP header in client requests. Both `Host` and `User-Agent` headers must be forwarded to SparkPost for Engagement Tracking to work as expected.
 
 1. Review and finalize
 
-    Select "Review and Finalize". Your configuration should now look like this:
+    Select **Review and Finalize**. Your configuration should now look like this:
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-review-finalize.png)
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-review.png)
 
-    Ensure your load balancer has a valid name.
+    Choose **Create**. After a few seconds, you should see the following status.
 
-    Choose "Create". After a few seconds, you should see the following status.
-
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-lb-created.png)
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-lb-created.png)
 
 ## Issue a certificate with Google Cloud
 
-Creating a new certificate is done through the HTTP(S) load balancer configuration. On the main menu (top left), navigate to "Network Services" then "Load balancing". Select your load balancer by clicking on its name.
+Creating a new certificate is done through the HTTP(S) load balancer configuration. On the main menu (top left), navigate to **Network Services** then **Load balancing**. Select your load balancer by clicking on its name.
 
-If you don't have a named certificate present under the "Frontend" section, follow step "Frontend configuration" above to begin the process.
+1. If you don't have a named certificate present under the *Frontend* section, follow step [Frontend configuration](#step-by-step-guide-with-google-cloud-platform) above to begin the process.
 
-Once you have a named certificate on your frontend, it should look like this. It may take a few minutes after creating the load balancer for the `IP:Port` to appear.
+1. Once you have a named certificate on your frontend, it should look like this. It may take a few minutes after creating the load balancer for the `IP:Port` to appear.
 
-![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-front-end-got-ip-port.png)
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-frontend-ip-port.png)
 
-The gray (i) indicates the certificate is in the "provisioning" state, not yet fully active.
+    Click on the certificate name (underlined in blue). You should see the status similar to this:
 
-* Click on the certificate name (underlined in blue). You should see the status similar to this.
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-provisioning-cert.png)
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-front-end-cert-provisioning.png)
+1. Take the IP address from the `IP:Port` value above, and use it to create your DNS record.
 
-2. Take the IP address from the `IP:Port` value above, and use it to create your DNS record.
-
-  * Point your tracking domain toward the load-balancer frontend with an [A record](https://en.wikipedia.org/wiki/List_of_DNS_record_types). The entry will vary depending on your DNS provider; for example, on GoDaddy, you omit the organizational domain from the "Host" field, i.e. type in only the subdomain part (here, we're using the subdomain "gcp").
+    Point your tracking domain toward the load-balancer frontend with an [A record](https://en.wikipedia.org/wiki/List_of_DNS_record_types). The entry will vary depending on your DNS provider; for example, on GoDaddy, you omit the organizational domain from the "Host" field, i.e. type in only the subdomain part (here, we're using the subdomain "gcp").
 
     ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-lb-dns-a-record.png)
 
-    Save your record. It will typically take from a few minutes up to several hours before the record is published and visible. While you're waiting, Google Cloud Platform will show the Domain Status with a yellow warning triangle; this is expected.
-
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-lb-dns-warning.png)
+    Save your record. It will typically take from a few minutes up to several hours before the record is published and visible. While you're waiting, Google Cloud Platform will show the Domain Status as *FAILED_NOT_VISIBLE* with a yellow warning icon; this is expected.
 
     If your A record is correct, Google Cloud Platform will activate the certificate and make it visible on the screen. The green check mark indicates the domain/certificate is active.
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-cert-success.png)
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/gcp-2023-active-cert.png)
 
     It can take a further few minutes after this before the certificate is fully active on the endpoint. You can check this using the [troubleshooting tips](#troubleshooting-tips).
 
@@ -567,32 +582,36 @@ The steps below are based on [this guide](https://docs.microsoft.com/en-us/azure
 
     ![](media/enabling-https-engagement-tracking-on-sparkpost/azure-select-resource-group.png)
 
-1. From the home page or the Azure menu, select Create a resource. Select Networking > See All > Front Door.
+1. From the home page or the Azure menu, select Create a resource. Select Media > Front Door and CDN profiles.
 
     ![](media/enabling-https-engagement-tracking-on-sparkpost/azure-front-door1.png)
 
-    Choose Create.
+    Choose Explore other offerings, choose Azure Front Door (classic) and then Continue.
 
     ![](media/enabling-https-engagement-tracking-on-sparkpost/azure-front-door2.png)
 
     Select your resource group. Select "Next: Configuration".
 
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/azure-front-door3.png)
+
 1. In Frontends/domains, select `+` to open "Add a frontend host". Give your host a name - this needs to be a valid, unique subdomain of the domain `.azurefd.net`. Choosing a name based on your custom tracking domain should help to ensure uniqueness; you should see a green check mark appear on the right. (We will change this later to be your actual custom domain.)
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/azure-front-door3.png)
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/azure-front-door4.png)
 
 1. Next, we create a backend pool that contains just the SparkPost tracking domain. In Backend pools, select + to open Add a backend pool. Give this a name.
 
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/azure-front-door4.png)
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/azure-front-door5.png)
 
 1. Select "Add a backend". Set the backend host type to be "Custom host". Set the backend host name to be the correct endpoint address for your service, see [here](#sparkpost-tracking-endpoints).
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/azure-front-door5.png)
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/azure-front-door6.png)
 
     * The backend host header field will be automatically filled in for you. Leave the HTTP port and HTTPS port settings at defaults. Click Add.
 
     * Leave the Health probe inactive, as there is only one backend.
+
+    * This will forward the `Host` and `User-Agent` HTTP headers to SparkPost properly, which is necessary for Engagement Tracking to work as expected.
 
 1. On "Routing rules", select `+`. Give your rule a name.
 
@@ -600,15 +619,15 @@ The steps below are based on [this guide](https://docs.microsoft.com/en-us/azure
 
     Set the Path to `/*` to match all incoming requests. Leave Route type set to the default "Forward", and set Forwarding Protocol to "Match request". Select "Add".
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/azure-front-door6.png)
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/azure-front-door7.png)
 
 1. Select "Review + create", then "Create".
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/azure-front-door7.png)
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/azure-front-door8.png)
 
     You should see "Deployment is in progress", followed by a "deployment complete" message.
 
-    ![](media/enabling-https-engagement-tracking-on-sparkpost/azure-front-door8.png)
+    ![](media/enabling-https-engagement-tracking-on-sparkpost/azure-front-door9.png)
 
     Your front door is now active on the subdomain we set up, and can be checked using `curl` with added path `/f/a/b/c/d`, for example:
 

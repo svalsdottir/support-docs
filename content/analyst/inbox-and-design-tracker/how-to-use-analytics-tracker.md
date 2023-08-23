@@ -1,63 +1,58 @@
 ---
-lastUpdated: "02/23/2023"
+lastUpdated: "05/02/2023"
 title: How to Use Analytics Tracker
 description: Interested to learn more about your subscribers? Create a tracking pixel to include in your email campaigns.
 ---
 
-## Place the EDS engagement pixel in the HTML of your next email campaign to find out:
+## Use the tracking pixel in your next email campaign to find out:
 
-* How much time subscribers spend reading the email
-* What browser or device they open with
-* Where in the world they're located when they interact with the campaign
+* What browser or device are used to open the email
+* What regions recipients are located in when they interact with the email
 
-**Navigate to Analytics Tracker and select “New Tracking Code”** 
+Watch this short [video to learn how to use Analytics Tracker](https://www.veed.io/view/b458f788-07e1-4553-b743-2d469a356ba2?panel=share).
 
-![](media/how_to_use_analytics_tracker/image_0.png)
+## Create a new tracking code: ##
 
-**Follow the simple steps to create the tracking code:** 
+### 1. Navigate to Analytics Tracker and select “New Analytics Campaign”
 
-1. Enter a name that you will recognize and connect to the email campaign
-2. Select the sending domain that you will use for the email campaign
-3. Set an expiration date when we should stop collecting new engagement data for this campaign
+![](media/how_to_use_analytics_tracker/newanalyticscampaign.png)
 
-![](media/how_to_use_analytics_tracker/image_1.png)
+### 2. Name Your Tracking Code
 
- Next, select your email deployment software (If you don’t see your ESP in the list, select “Other” and input the merge tag that your provider uses to dynamically publish the recipient’s email address into your email content. Example: %%emailaddr%%)
+- Enter a tracking code name
+- Set an expiration date for tracking this campaign
+- Click "Select your marketing software" button to proceed to the next step.
 
-![](media/how_to_use_analytics_tracker/image_2.png)
+![](media/how_to_use_analytics_tracker/trackingcode.png)
 
- Copy the tracking code and place it into your HTML. Once added, send a preview of your email campaign to the test address shown (Pro Tip: If this isn’t your first rodeo, “Skip this” to end the tracking code setup):
+### 3. Place the Tracking Code in Your Email
 
-![](media/how_to_use_analytics_tracker/image_3.png)
+- From the pulldown, select your email deployment software. If you don’t see your ESP in the list, select “Other” and input the merge tag that your provider uses to dynamically publish the recipient’s email address into your email content. Example: `%%emailaddr%%`
+- Copy the tracking code, paste it into your HTML, and select Done. If you want to verify the tracking code before deployment select the "Verify Code" button.
+- After you email the campaign, come back to Analytics Tracker and view the results for the campaign.
 
- Once you’ve mailed the campaign, come back to Analytics Tracker and view the results for the campaign. Each time one of your subscriber's opens the email containing the pixel, that is one Analytics event. Data will continue to be collected until the expiration date that you defined in the tracking code setup.
+![](media/how_to_use_analytics_tracker/trackingcode2.png)
+
+*Note: Each time one of your subscriber's opens the email containing the pixel, that is one Analytics event. Data will continue to be collected until the expiration date that you defined in the tracking code setup.*
 
 ## Scheduled Analytics Exports
 
- We've made exporting Analytics campaigns a whole lot easier! You can now schedule an events export for 'daily' or 'weekly' during an active campaign, or 'upon expiration' of the campaign tracking.
+We've made exporting Analytics campaigns a whole lot easier! You can now schedule an events export for 'daily' or 'weekly' during an active campaign, or 'upon expiration' of the campaign tracking.
 
- Here is a look at the all the export options that are available:
+Here are all the available export options:
 
-![](media/how_to_use_analytics_tracker/image_4.png)
+![](media/how_to_use_analytics_tracker/export.png)
 
- Use your findings to prioritize optimization of your email template across email clients, browser and devices. Understand where your subscribers are located throughout the world and how much time they spend viewing your email.
+Use your findings to prioritize optimization of your email template across email clients, browser and devices. Understand where your subscribers are located throughout the world and how much time they spend viewing your email.
 
-![](media/how_to_use_analytics_tracker/image_5.png)
-
-
-![](media/how_to_use_analytics_tracker/image_6.png)
+![](media/how_to_use_analytics_tracker/counts.png)
 
 
-![](media/how_to_use_analytics_tracker/image_7.png)
+![](media/how_to_use_analytics_tracker/engagement.png)
 
 
-![](media/how_to_use_analytics_tracker/image_8.png)
+![](media/how_to_use_analytics_tracker/emailclients.png)
 
 
-![](media/how_to_use_analytics_tracker/image_9.png)
+![](media/how_to_use_analytics_tracker/geolocation.png)
 
-
-![](media/how_to_use_analytics_tracker/image_10.png)
-
-
-![](media/how_to_use_analytics_tracker/image_11.png)
